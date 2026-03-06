@@ -37,7 +37,7 @@ class ChatRoomSerializer(serializers.ModelSerializer):
 
 
 class ChatRoomListSerializer(serializers.ModelSerializer):
-    """Lightweight - used for chat inbox list."""
+    
 
     customer = UserMiniSerializer(read_only=True)
     assigned_staff = UserMiniSerializer(read_only=True)
@@ -48,3 +48,4 @@ class ChatRoomListSerializer(serializers.ModelSerializer):
             'id', 'booking', 'customer', 'assigned_staff',
             'status', 'last_message_at',
         ]
+
