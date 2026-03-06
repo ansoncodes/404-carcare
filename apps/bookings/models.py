@@ -20,11 +20,11 @@ class Booking(BaseModel):
 
     class Stage(models.TextChoices):
         RECEIVED = "received", "Received"
-        INSPECTION = "inspection", "Pre Inspection"
+        PRE_INSPECTION = "pre_inspection", "Pre Inspection"
         WASHING = "washing", "Washing"
         DRYING = "drying", "Drying"
         DETAILING = "detailing", "Detailing"
-        QC = "qc", "Quality Check"
+        QUALITY_CHECK = "quality_check", "Quality Check"
         READY = "ready", "Ready for Pickup"
 
     customer = models.ForeignKey("accounts.CustomUser", on_delete=models.CASCADE, related_name="bookings")

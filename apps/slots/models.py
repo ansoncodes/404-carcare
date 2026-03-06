@@ -23,9 +23,8 @@ class TimeSlot(BaseModel):
 
     @property
     def available_spots(self):
-        return self.total_capacity - self.booked_count
+        return max(self.total_capacity - self.booked_count, 0)
 
     def save(self, *args, **kwargs):
-        if self.booked_count >= self.total_capacity:
-            self.is_available = False
+        self.is_available = self.booked_count < self.total_capacity
         super().save(*args, **kwargs)
