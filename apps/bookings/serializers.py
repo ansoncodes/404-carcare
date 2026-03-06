@@ -102,7 +102,7 @@ class BookingSerializer(serializers.ModelSerializer):
 
 
 class BookingListSerializer(serializers.ModelSerializer):
-    """Lightweight - used for list views."""
+    
 
     vehicle = VehicleMiniSerializer(read_only=True)
     airport = AirportMiniSerializer(read_only=True)
@@ -113,3 +113,4 @@ class BookingListSerializer(serializers.ModelSerializer):
             'id', 'booking_reference', 'vehicle', 'airport',
             'status', 'current_stage', 'progress_percentage', 'created_at',
         ]
+

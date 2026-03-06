@@ -23,10 +23,6 @@ class CustomUserManager(BaseUserManager):
 
 class CustomUser(AbstractBaseUser, PermissionsMixin, BaseModel):
   
-    #single user model for all 3 roles.
-    #customer   → books services, tracks progress, chats, pays
-    #supervisor → manages job cards, updates stages, chats with customers
-    #admin      → full access + analytics dashboard
     
 
     class Role(models.TextChoices):
@@ -72,3 +68,4 @@ class CustomUser(AbstractBaseUser, PermissionsMixin, BaseModel):
     @property
     def is_admin(self):
         return self.role == self.Role.ADMIN
+

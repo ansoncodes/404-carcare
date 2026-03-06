@@ -1,4 +1,4 @@
-from rest_framework import serializers
+﻿from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from apps.accounts.models import CustomUser
 
@@ -22,7 +22,6 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    #full user detail. used by admin and profile views.
 
     class Meta:
         model  = CustomUser

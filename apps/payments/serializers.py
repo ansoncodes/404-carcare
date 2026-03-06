@@ -24,7 +24,8 @@ class PaymentSerializer(serializers.ModelSerializer):
 
 
 class MockPaymentSerializer(serializers.Serializer):
-    """Used for POST /api/v1/payments/mock/."""
+    
 
     booking_id = serializers.UUIDField()
     payment_method = serializers.ChoiceField(choices=Payment.PaymentMethod.choices)
+
