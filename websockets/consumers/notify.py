@@ -6,6 +6,7 @@ from channels.db                import database_sync_to_async
 class NotificationConsumer(AsyncWebsocketConsumer):
 
     async def connect(self):
+        self.group_name = None
         user = self.scope['user']
 
         if not user or not user.is_authenticated:
@@ -26,7 +27,8 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         }))
 
     async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(self.group_name, self.channel_name)
+        if self.group_name:
+            await self.channel_layer.group_discard(self.group_name, self.channel_name)
 
     # broadcast handler — called when Django signal fires
     async def send_notification(self, event):

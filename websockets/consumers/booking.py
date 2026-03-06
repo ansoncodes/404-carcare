@@ -6,6 +6,7 @@ from channels.db                import database_sync_to_async
 class BookingProgressConsumer(AsyncWebsocketConsumer):
 
     async def connect(self):
+        self.group_name = None
         self.booking_id = self.scope['url_route']['kwargs']['booking_id']
         self.group_name = f'booking_{self.booking_id}'
         user            = self.scope['user']
@@ -35,7 +36,8 @@ class BookingProgressConsumer(AsyncWebsocketConsumer):
         }))
 
     async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(self.group_name, self.channel_name)
+        if self.group_name:
+            await self.channel_layer.group_discard(self.group_name, self.channel_name)
 
     # receive broadcast from Django signal (sent via channel layer)
     async def progress_update(self, event):
