@@ -1,5 +1,5 @@
-from django.apps import AppConfig
+﻿from django.apps import AppConfig
 
 
 class ServicesConfig(AppConfig):
-    name = 'services'
+    name = 'apps.services'
