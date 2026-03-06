@@ -1,6 +1,7 @@
 ﻿from django.db import models
 
 import uuid as _uuid
+from decimal import Decimal, ROUND_HALF_UP
 
 from apps.core.models import BaseModel
 
@@ -43,6 +44,7 @@ class Payment(BaseModel):
         return f"{self.invoice_number} — ₹{self.total_amount} ({self.status})"
 
     def save(self, *args, **kwargs):
-        self.tax_amount = round(float(self.subtotal) * 0.18, 2)
-        self.total_amount = float(self.subtotal) + self.tax_amount - float(self.discount)
+        tax_rate = Decimal("0.18")
+        self.tax_amount = (self.subtotal * tax_rate).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        self.total_amount = (self.subtotal + self.tax_amount - self.discount).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         super().save(*args, **kwargs)
