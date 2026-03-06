@@ -1,22 +1,28 @@
-﻿from asgiref.sync import async_to_sync
+﻿import logging
+
+from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.db.models import Sum
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
 
+logger = logging.getLogger(__name__)
 
-def _get_channel_layer():
-    return get_channel_layer()
+
+def _safe_group_send(group_name, payload):
+    channel_layer = get_channel_layer()
+    if channel_layer is None:
+        return
+    try:
+        async_to_sync(channel_layer.group_send)(group_name, payload)
+    except Exception:
+        logger.warning("WebSocket group_send failed for group '%s'", group_name, exc_info=True)
 
 
 @receiver(post_save, sender='bookings.Booking', dispatch_uid='ws_broadcast_booking_progress')
 def broadcast_booking_progress(sender, instance, **kwargs):
-    channel_layer = _get_channel_layer()
-    if channel_layer is None:
-        return
-
-    async_to_sync(channel_layer.group_send)(
+    _safe_group_send(
         f'booking_{instance.id}',
         {
             'type': 'progress_update',
@@ -33,14 +39,10 @@ def broadcast_notification(sender, instance, created, **kwargs):
     if not created:
         return
 
-    channel_layer = _get_channel_layer()
-    if channel_layer is None:
-        return
-
     from apps.notifications.models import Notification
 
     unread_count = Notification.objects.filter(recipient=instance.recipient, is_read=False).count()
-    async_to_sync(channel_layer.group_send)(
+    _safe_group_send(
         f'notifications_{instance.recipient.id}',
         {
             'type': 'send_notification',
@@ -58,11 +60,7 @@ def broadcast_chat_message(sender, instance, created, **kwargs):
     if not created:
         return
 
-    channel_layer = _get_channel_layer()
-    if channel_layer is None:
-        return
-
-    async_to_sync(channel_layer.group_send)(
+    _safe_group_send(
         f'chat_{instance.room_id}',
         {
             'type': 'chat_message',
@@ -80,16 +78,12 @@ def broadcast_chat_message(sender, instance, created, **kwargs):
 @receiver(post_save, sender='payments.Payment', dispatch_uid='ws_broadcast_dashboard_update_from_payment')
 @receiver(post_save, sender='bookings.Booking', dispatch_uid='ws_broadcast_dashboard_update_from_booking')
 def broadcast_dashboard_update(sender, instance, **kwargs):
-    channel_layer = _get_channel_layer()
-    if channel_layer is None:
-        return
-
     from apps.bookings.models import Booking
     from apps.operations.models import JobCard
     from apps.payments.models import Payment
 
     today = timezone.now().date()
-    async_to_sync(channel_layer.group_send)(
+    _safe_group_send(
         'analytics_dashboard',
         {
             'type': 'dashboard_update',
@@ -98,9 +92,7 @@ def broadcast_dashboard_update(sender, instance, **kwargs):
             'today_revenue': str(
                 Payment.objects.filter(status='paid', paid_at__date=today).aggregate(t=Sum('total_amount'))['t'] or 0
             ),
-            'total_revenue': str(
-                Payment.objects.filter(status='paid').aggregate(t=Sum('total_amount'))['t'] or 0
-            ),
+            'total_revenue': str(Payment.objects.filter(status='paid').aggregate(t=Sum('total_amount'))['t'] or 0),
             'pending_payments': Payment.objects.filter(status='pending').count(),
         },
     )
