@@ -1,4 +1,4 @@
-from rest_framework import serializers
+﻿from rest_framework import serializers
 
 
 class BookingStatsSerializer(serializers.Serializer):
@@ -33,3 +33,4 @@ class DashboardSummarySerializer(serializers.Serializer):
     best_airport       = AirportRevenueSerializer()
     worst_airport      = AirportRevenueSerializer()
     airports_ranked    = AirportRevenueSerializer(many=True)
+
