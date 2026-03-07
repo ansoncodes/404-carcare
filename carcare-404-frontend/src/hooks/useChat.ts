@@ -56,5 +56,5 @@ export function useChat(roomId: string) {
     },
   });
 
-  return { messages: liveMessages, isLoading, refetch, connected: socket.connected, send: socket.send };
+  return { messages: liveMessages, isLoading, refetch, send: socket.send };
 }

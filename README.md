@@ -69,7 +69,6 @@ The backend is modularized into distinct Django apps.
   - Leverages ModelViewSets, comprehensive object-level permissions, and signals.
 - **Frontend:** Next.js + React + TailwindCSS
   - Highly premium, dark-themed responsive SaaS interfaces utilizing Lucide icons, Framer Motion (for pulsing live states), and specialized dashboards.
-- **State Management:** Zustand + React Query.
 
 ## Quick Start (Local Development)
 

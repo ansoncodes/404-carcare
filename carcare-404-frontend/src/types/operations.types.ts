@@ -1,4 +1,5 @@
 import type { BookingListRow } from "@/types/booking.types";
+import type { UserMini } from "@/types/auth.types";
 
 export type JobCardStatus = "pending" | "active" | "paused" | "completed";
 export type WorkStageStatus = "pending" | "in_progress" | "completed" | "skipped";
@@ -7,7 +8,7 @@ export interface JobCard {
   id: string;
   booking: string | BookingListRow;
   airport: string;
-  supervisor: string | null;
+  supervisor: UserMini | null;
   job_number: string;
   status: JobCardStatus;
   started_at: string | null;
@@ -23,7 +24,7 @@ export interface JobCard {
 
 export interface WorkStage {
   id: string;
-  job_card: string;
+  job_card?: string;
   stage_name: string;
   stage_order: number;
   estimated_duration_minutes: number;

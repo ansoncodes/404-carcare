@@ -34,7 +34,7 @@ export function useNotifications() {
     }
   }, [query.data, reset, setList, userId]);
 
-  const socket = useWebSocket({
+  useWebSocket({
     path: "/ws/notifications/",
     enabled: Boolean(userId),
     onMessage: (payload) => {
@@ -67,5 +67,5 @@ export function useNotifications() {
     },
   });
 
-  return { ...query, connected: socket.connected };
+  return query;
 }

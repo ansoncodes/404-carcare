@@ -93,7 +93,7 @@ export default function CustomerDashboardPage() {
 
           <div className="relative z-10 flex w-full max-w-3xl flex-col justify-between">
             <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-cyan-300">Welcome back</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-cyan-300">Welcome</p>
               <h1 className="text-4xl font-bold leading-tight text-[var(--text-primary)] sm:text-5xl">
                 {user?.full_name ?? "Customer"},
               </h1>

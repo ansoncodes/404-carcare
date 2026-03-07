@@ -6,6 +6,12 @@ export interface ChatRoom {
   booking: string | BookingListRow;
   customer: UserMini;
   assigned_staff: UserMini | null;
+  airport?: {
+    id: string;
+    name: string;
+    code: string;
+    city: string;
+  } | null;
   status: "active" | "closed" | "archived";
   last_message_at: string | null;
 }
