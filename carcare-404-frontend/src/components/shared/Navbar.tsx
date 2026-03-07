@@ -13,6 +13,7 @@ export function Navbar() {
   const clearAuth = useAuthStore((state) => state.clearAuth);
   const homeHref = user?.role === "admin" ? "/admin/dashboard" : user?.role === "supervisor" ? "/supervisor/dashboard" : "/dashboard";
 
+  
   const onLogout = () => {
     clearAuth();
     router.replace("/login");
