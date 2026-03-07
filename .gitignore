@@ -20,5 +20,4 @@ staticfiles/
 # OS
 .DS_Store
 Thumbs.db
-apps/core/management/
 samp_images/

@@ -10,11 +10,13 @@ interface AdminLayoutProps {
 const items = [
   { label: "Dashboard", href: "/admin/dashboard" },
   { label: "Airports", href: "/admin/airports" },
-  { label: "Services", href: "/admin/services" },
-  { label: "Slots", href: "/admin/slots" },
-  { label: "Parking", href: "/admin/parking" },
-  { label: "Users", href: "/admin/users" },
+  { label: "Supervisors", href: "/admin/supervisors" },
   { label: "Bookings", href: "/admin/bookings" },
+  { label: "Parking", href: "/admin/parking" },
+  { label: "Chat", href: "/admin/chat" },
+  { label: "Reports", href: "/admin/reports" },
+  { label: "Services", href: "/admin/services" },
+  { label: "Users", href: "/admin/users" },
   { label: "Payments", href: "/admin/payments" },
 ];
 

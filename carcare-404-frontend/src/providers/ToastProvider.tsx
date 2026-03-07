@@ -22,10 +22,10 @@ export function ToastProvider({ children }: Props) {
 
   const push = useCallback((title: string, message: string, type: ToastType = "info") => {
     const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    setToasts((prev) => [...prev, { id, title, message, type }]);
+    setToasts((prev) => [...prev.slice(-3), { id, title, message, type }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((item) => item.id !== id));
-    }, 3000);
+    }, 3200);
   }, []);
 
   const value = useMemo(() => ({ push }), [push]);

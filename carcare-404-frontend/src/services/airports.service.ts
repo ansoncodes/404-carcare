@@ -3,6 +3,7 @@ import type { Airport } from "@/types/airport.types";
 
 export type AirportPayload = Pick<Airport, "name" | "code" | "city"> & {
   address?: string | null;
+  timezone?: string;
   is_active?: boolean;
 };
 

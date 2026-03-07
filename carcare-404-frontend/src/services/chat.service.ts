@@ -16,8 +16,10 @@ export async function assignChatRoomStaff(roomId: string, staff_id: string): Pro
   return data;
 }
 
-export async function listMessages(room: string): Promise<Message[]> {
-  const { data } = await api.get<Message[]>("/messages/", { params: { room } });
+export async function listMessages(room?: string): Promise<Message[]> {
+  const { data } = await api.get<Message[]>("/messages/", {
+    params: room ? { room } : undefined,
+  });
   return data;
 }
 

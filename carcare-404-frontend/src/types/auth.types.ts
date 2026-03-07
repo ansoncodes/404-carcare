@@ -10,6 +10,8 @@ export interface User {
   is_verified: boolean;
   is_staff?: boolean;
   airport: string | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface UserMini {

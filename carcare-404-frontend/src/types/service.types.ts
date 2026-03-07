@@ -7,6 +7,15 @@ export interface ServiceCategory {
   services?: Service[];
 }
 
+export interface ServiceStage {
+  id: string;
+  stage_name: string;
+  stage_order: number;
+  description: string | null;
+  estimated_duration_minutes: number;
+  created_at: string;
+}
+
 export interface Service {
   id: string;
   category: string;
@@ -15,6 +24,7 @@ export interface Service {
   duration_minutes: number;
   base_price: string;
   is_active: boolean;
+  stages?: ServiceStage[];
 }
 
 export interface ServiceCategoryPayload {

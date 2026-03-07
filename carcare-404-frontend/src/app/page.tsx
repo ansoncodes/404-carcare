@@ -20,7 +20,7 @@ export default function HomePage() {
     }
 
     if (user.role === "supervisor") {
-      router.replace("/job-cards");
+      router.replace("/supervisor/dashboard");
       return;
     }
 

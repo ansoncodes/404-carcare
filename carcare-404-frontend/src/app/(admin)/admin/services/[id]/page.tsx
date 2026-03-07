@@ -117,6 +117,26 @@ export default function AdminServiceDetailPage() {
           </Button>
         </div>
       </form>
+      <Card>
+        <h3 className="text-sm font-semibold text-[var(--text-primary)]">Service Stages</h3>
+        {!serviceQuery.data?.stages || serviceQuery.data.stages.length === 0 ? (
+          <p className="mt-2 text-sm text-[var(--text-secondary)]">No stages configured.</p>
+        ) : (
+          <ul className="mt-2 space-y-2 text-sm text-[var(--text-secondary)]">
+            {serviceQuery.data.stages
+              .slice()
+              .sort((first, second) => first.stage_order - second.stage_order)
+              .map((stage) => (
+                <li key={stage.id}>
+                  {stage.stage_order}. {stage.stage_name} ({stage.estimated_duration_minutes} mins)
+                </li>
+              ))}
+          </ul>
+        )}
+        <p className="mt-2 text-xs text-[var(--text-muted)]">
+          Stage CRUD is not exposed by current backend API.
+        </p>
+      </Card>
     </section>
   );
 }
