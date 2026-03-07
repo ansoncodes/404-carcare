@@ -42,7 +42,7 @@ class MockPayView(APIView):
         payment_method = serializer.validated_data["payment_method"]
 
         try:
-            booking = Booking.objects.select_related("customer").get(id=booking_id, customer=request.user)
+            booking = Booking.objects.select_related("customer", "parking_booking").get(id=booking_id, customer=request.user)
         except Booking.DoesNotExist:
             return Response({"detail": "Booking not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -50,9 +50,9 @@ class MockPayView(APIView):
         if existing_payment and existing_payment.status == Payment.Status.PAID:
             return Response({"detail": "Booking is already paid."}, status=status.HTTP_400_BAD_REQUEST)
 
-        subtotal = booking.total_estimated_cost
-        if subtotal is None:
-            subtotal = booking.items.aggregate(total=Sum("total_price"))["total"] or Decimal("0.00")
+        services_subtotal = booking.items.aggregate(total=Sum("total_price"))["total"] or Decimal("0.00")
+        parking_subtotal = booking.parking_booking.total_cost if booking.parking_booking and booking.parking_booking.total_cost else Decimal("0.00")
+        subtotal = services_subtotal + parking_subtotal
 
         with transaction.atomic():
             if existing_payment:

@@ -3,9 +3,10 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from apps.accounts.views import ChangePasswordView, ProfileView, RegisterView, UserListView
+from apps.accounts.views import ChangePasswordView, ProfileView, RegisterView, UserDetailView, UserListView
 from apps.airports.views import AirportViewSet
-from apps.analytics.views import DashboardView
+from apps.analytics.views import DashboardView, RevenueInsightsView
+from apps.bookings.availability_views import CheckAvailabilityView, DayAvailabilityView
 from apps.bookings.views import BookingViewSet
 from apps.chat.views import ChatRoomViewSet, MessageViewSet
 from apps.notifications.views import NotificationViewSet
@@ -13,7 +14,6 @@ from apps.operations.views import JobCardViewSet, WorkStageViewSet
 from apps.parking.views import ParkingBookingViewSet, ParkingSlotViewSet
 from apps.payments.views import MockPayView, PaymentViewSet
 from apps.services.views import ServiceCategoryViewSet, ServiceViewSet
-from apps.slots.views import TimeSlotViewSet
 from apps.vehicles.views import VehicleViewSet
 
 
@@ -26,7 +26,6 @@ router.register("airports", AirportViewSet, basename="airports")
 router.register("vehicles", VehicleViewSet, basename="vehicles")
 router.register("service-categories", ServiceCategoryViewSet, basename="service-categories")
 router.register("services", ServiceViewSet, basename="services")
-router.register("slots", TimeSlotViewSet, basename="slots")
 router.register("parking-slots", ParkingSlotViewSet, basename="parking-slots")
 router.register("parking-bookings", ParkingBookingViewSet, basename="parking-bookings")
 router.register("bookings", BookingViewSet, basename="bookings")
@@ -46,7 +45,11 @@ urlpatterns = [
     path("auth/profile/", ProfileView.as_view(), name="auth-profile"),
     path("auth/change-password/", ChangePasswordView.as_view(), name="auth-change-password"),
     path("users/", UserListView.as_view(), name="users-list"),
+    path("users/<uuid:user_id>/", UserDetailView.as_view(), name="users-detail"),
     path("payments/mock/", MockPayView.as_view(), name="payments-mock"),
     path("analytics/dashboard/", DashboardView.as_view(), name="analytics-dashboard"),
+    path("analytics/revenue-insights/", RevenueInsightsView.as_view(), name="analytics-revenue-insights"),
+    path("bookings/check-availability/", CheckAvailabilityView.as_view(), name="bookings-check-availability"),
+    path("bookings/day-availability/", DayAvailabilityView.as_view(), name="bookings-day-availability"),
     path("", include(router.urls)),
 ]

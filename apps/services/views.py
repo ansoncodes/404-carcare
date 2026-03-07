@@ -11,7 +11,7 @@ class ServiceCategoryViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = ServiceCategory.objects.prefetch_related("services").order_by("name")
+        queryset = ServiceCategory.objects.prefetch_related("services", "services__stages").order_by("name")
         if not self.request.user.is_admin:
             queryset = queryset.filter(is_active=True)
         return queryset
@@ -39,7 +39,7 @@ class ServiceViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = Service.objects.select_related("category").order_by("category__name", "name")
+        queryset = Service.objects.select_related("category").prefetch_related("stages").order_by("category__name", "name")
         if not self.request.user.is_admin:
             queryset = queryset.filter(is_active=True)
 

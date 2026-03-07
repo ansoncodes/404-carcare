@@ -9,3 +9,8 @@ class BaseModel(models.Model):
 
     class Meta:
         abstract = True
+
+
+# Import so Django discovers the AuditLog model for migrations
+from apps.core.audit import AuditLog  # noqa: E402, F401
+

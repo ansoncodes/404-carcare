@@ -10,6 +10,7 @@ from django.db.models import Q
 from apps.accounts.models import CustomUser
 from apps.chat.models import ChatRoom, Message
 from apps.chat.serializers import ChatRoomListSerializer, ChatRoomSerializer, MessageSerializer
+from apps.core.audit_utils import log_cross_airport_attempt
 
 
 class ChatRoomViewSet(ModelViewSet):
@@ -22,16 +23,37 @@ class ChatRoomViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        queryset = ChatRoom.objects.select_related("booking", "customer", "assigned_staff").prefetch_related("messages").order_by("-last_message_at")
+        queryset = ChatRoom.objects.select_related(
+            "booking",
+            "booking__vehicle",
+            "booking__airport",
+            "customer",
+            "assigned_staff",
+            "airport",
+        ).prefetch_related("messages").order_by("-last_message_at")
         if user.is_admin:
             return queryset
         if user.is_supervisor:
             return queryset.filter(assigned_staff=user)
         return queryset.filter(customer=user)
 
+    def retrieve(self, request, *args, **kwargs):
+        """Override retrieve to audit-log cross-airport chat access attempts."""
+        instance = self.get_object()
+        user = request.user
+        if user.is_supervisor and instance.assigned_staff_id != user.id:
+            log_cross_airport_attempt(
+                user=user,
+                resource_type="chat_room",
+                resource_id=str(instance.id),
+                request=request,
+                details=f"Supervisor {user.email} tried to access chat room belonging to another supervisor.",
+            )
+            return Response({"detail": "Forbidden."}, status=status.HTTP_403_FORBIDDEN)
+        return super().retrieve(request, *args, **kwargs)
+
     @action(detail=True, methods=["post"], url_path="assign-staff")
     def assign_staff(self, request, pk=None):
-        
         if not request.user.is_admin:
             return Response({"detail": "Forbidden."}, status=status.HTTP_403_FORBIDDEN)
         room = self.get_object()
@@ -62,13 +84,25 @@ class MessageViewSet(ModelViewSet):
     def perform_create(self, serializer):
         room = serializer.validated_data["room"]
         user = self.request.user
-        if not (user.is_admin or room.customer_id == user.id or room.assigned_staff_id == user.id):
+
+        # RULE 4: Admin is read-only on chats
+        if user.is_admin:
+            raise PermissionDenied("Admins have read-only access to chats.")
+
+        if not (room.customer_id == user.id or room.assigned_staff_id == user.id):
+            # Log the unauthorized attempt
+            log_cross_airport_attempt(
+                user=user,
+                resource_type="chat_message",
+                resource_id=str(room.id),
+                request=self.request,
+                details=f"User {user.email} tried to post to chat room they don't belong to.",
+            )
             raise PermissionDenied("You cannot post to this chat room.")
         serializer.save(sender=user)
 
     @action(detail=False, methods=["post"], url_path="mark-read")
     def mark_read(self, request):
-        
         room_id = request.data.get("room_id")
         if not room_id:
             return Response({"detail": "room_id is required."}, status=status.HTTP_400_BAD_REQUEST)
@@ -85,4 +119,3 @@ class MessageViewSet(ModelViewSet):
             read_at=timezone.now(),
         )
         return Response({"marked_read": updated})
-
