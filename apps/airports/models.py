@@ -8,6 +8,7 @@ class Airport(BaseModel):
     code      = models.CharField(max_length=10, unique=True, help_text='e.g. BLR, MAA, DEL')
     city      = models.CharField(max_length=100)
     address   = models.TextField(null=True, blank=True)
+    timezone  = models.CharField(max_length=50, default='Asia/Kolkata', help_text='e.g. Asia/Kolkata, America/New_York')
     is_active = models.BooleanField(default=True)
 
     class Meta:

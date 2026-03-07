@@ -40,6 +40,7 @@ def broadcast_notification(sender, instance, created, **kwargs):
         return
 
     from apps.notifications.models import Notification
+    from apps.notifications.utils import get_notification_target_url
 
     unread_count = Notification.objects.filter(recipient=instance.recipient, is_read=False).count()
     _safe_group_send(
@@ -47,9 +48,14 @@ def broadcast_notification(sender, instance, created, **kwargs):
         {
             'type': 'send_notification',
             'notification_id': str(instance.id),
+            'booking_id': str(instance.booking_id) if instance.booking_id else None,
+            'chat_room_id': str(instance.chat_room_id) if instance.chat_room_id else None,
             'notification_type': instance.notification_type,
             'title': instance.title,
             'body': instance.body,
+            'event_data': instance.event_data or {},
+            'target_url': get_notification_target_url(instance),
+            'created_at': instance.created_at.isoformat(),
             'unread_count': unread_count,
         },
     )
@@ -73,6 +79,46 @@ def broadcast_chat_message(sender, instance, created, **kwargs):
             'created_at': instance.created_at.isoformat(),
         },
     )
+
+
+@receiver(post_save, sender='bookings.Booking', dispatch_uid='auto_create_chat_room_on_confirmed')
+def auto_create_chat_room(sender, instance, **kwargs):
+    """Auto-create a ChatRoom when a booking is confirmed (e.g. after payment)."""
+    from apps.accounts.models import CustomUser
+    from apps.chat.models import ChatRoom
+
+    if instance.status != instance.Status.CONFIRMED:
+        return
+
+    # Prefer booking supervisor, fallback to airport supervisor.
+    supervisor = instance.supervisor or (
+        CustomUser.objects.filter(role=CustomUser.Role.SUPERVISOR, airport=instance.airport)
+        .first()
+    )
+
+    room, created = ChatRoom.objects.get_or_create(
+        booking=instance,
+        defaults={
+            'customer': instance.customer,
+            'assigned_staff': supervisor,
+            'airport': instance.airport,
+        },
+    )
+    if created:
+        return
+
+    updates = []
+    if room.assigned_staff_id != (supervisor.id if supervisor else None):
+        room.assigned_staff = supervisor
+        updates.append('assigned_staff')
+    if room.airport_id != instance.airport_id:
+        room.airport = instance.airport
+        updates.append('airport')
+    if room.customer_id != instance.customer_id:
+        room.customer = instance.customer
+        updates.append('customer')
+    if updates:
+        room.save(update_fields=[*updates, 'updated_at'])
 
 
 @receiver(post_save, sender='payments.Payment', dispatch_uid='ws_broadcast_dashboard_update_from_payment')

@@ -30,7 +30,17 @@ class Booking(BaseModel):
     customer = models.ForeignKey("accounts.CustomUser", on_delete=models.CASCADE, related_name="bookings")
     vehicle = models.ForeignKey("vehicles.Vehicle", on_delete=models.CASCADE, related_name="bookings")
     airport = models.ForeignKey("airports.Airport", on_delete=models.CASCADE, related_name="bookings")
-    time_slot = models.ForeignKey("slots.TimeSlot", on_delete=models.CASCADE, related_name="bookings")
+    supervisor = models.ForeignKey(
+        "accounts.CustomUser",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="supervised_bookings",
+        limit_choices_to={"role": "supervisor"},
+    )
+    scheduled_start = models.DateTimeField(null=True, blank=True)
+    scheduled_end = models.DateTimeField(null=True, blank=True)
+    total_duration_minutes = models.PositiveIntegerField(default=0)
     parking_booking = models.OneToOneField(
         "parking.ParkingBooking",
         on_delete=models.SET_NULL,
@@ -41,7 +51,7 @@ class Booking(BaseModel):
     booking_reference = models.CharField(max_length=20, unique=True, default=generate_booking_reference)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     progress_percentage = models.PositiveIntegerField(default=0)
-    current_stage = models.CharField(max_length=20, choices=Stage.choices, null=True, blank=True)
+    current_stage = models.CharField(max_length=100, null=True, blank=True)
     estimated_completion = models.DateTimeField(null=True, blank=True)
     special_instructions = models.TextField(null=True, blank=True)
     total_estimated_cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
@@ -53,6 +63,14 @@ class Booking(BaseModel):
 
     def __str__(self):
         return f"{self.booking_reference} — {self.customer.full_name} ({self.status})"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._initial_status = self.status
+
+    def mark_as_deleted(self):
+        self.status = self.Status.CANCELLED
+        self.save(update_fields=["status", "updated_at"])
 
     def update_progress(self, stage, percentage):
         self.current_stage = stage
