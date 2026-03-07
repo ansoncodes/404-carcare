@@ -13,7 +13,7 @@ export function useBookingProgress(bookingId: string, initialProgress: number, i
   const [progress, setProgress] = useState(initialProgress);
   const [stage, setStage] = useState<string | null>(initialStage);
 
-  const { connected } = useWebSocket({
+  useWebSocket({
     path: `/ws/bookings/${bookingId}/`,
     onMessage: (payload) => {
       const event = payload as Partial<ProgressEvent>;
@@ -27,5 +27,5 @@ export function useBookingProgress(bookingId: string, initialProgress: number, i
     enabled: Boolean(bookingId),
   });
 
-  return { progress, stage, connected };
+  return { progress, stage };
 }

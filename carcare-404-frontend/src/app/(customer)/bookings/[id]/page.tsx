@@ -77,7 +77,6 @@ export default function BookingDetailPage() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <Badge status={booking.status} pulse={booking.status === "in_progress"} />
-            <span className="text-xs font-medium text-[var(--text-secondary)]">{progress.connected ? "Live" : "Offline"}</span>
           </div>
           <p className="text-sm text-[var(--text-primary)]">
             Current stage: <span className="font-semibold">{progress.stage ? titleCase(progress.stage) : "Pending"}</span>

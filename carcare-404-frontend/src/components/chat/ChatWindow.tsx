@@ -29,17 +29,6 @@ export function ChatWindow({ roomId }: ChatWindowProps) {
 
   return (
     <div className="panel flex h-[70vh] flex-col overflow-hidden">
-      {/* Connection indicator */}
-      <div className="flex items-center gap-2 border-b border-[var(--bg-border)] px-4 py-2">
-        <span
-          className={`h-2 w-2 rounded-full ${chat.connected ? "bg-emerald-400" : "bg-red-400"
-            }`}
-        />
-        <span className="text-xs text-[var(--text-muted)]">
-          {chat.connected ? "Connected" : "Reconnecting..."}
-        </span>
-      </div>
-
       {/* Messages */}
       <div className="flex-1 space-y-2 overflow-y-auto p-4">
         {chat.messages.length === 0 && (

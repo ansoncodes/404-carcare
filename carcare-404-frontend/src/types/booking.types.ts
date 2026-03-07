@@ -39,12 +39,26 @@ export interface BookingItem {
   total_price: string;
 }
 
+export interface BookingParkingInfo {
+  id: string;
+  booking_reference: string;
+  status: "pending" | "active" | "completed" | "cancelled";
+  expected_checkout: string | null;
+  total_cost: string | null;
+  parking_slot: {
+    id: string;
+    slot_code: string;
+    zone_label: string;
+    floor: number;
+  };
+}
+
 export interface Booking {
   id: string;
   customer: UserMini;
   vehicle: BookingVehicleMini;
   airport: Pick<Airport, "id" | "name" | "code" | "city">;
-  parking_booking: string | null;
+  parking_booking: BookingParkingInfo | null;
   booking_reference: string;
   status: BookingStatus;
   progress_percentage: number;

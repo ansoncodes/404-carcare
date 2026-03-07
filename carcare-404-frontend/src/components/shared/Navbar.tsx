@@ -18,8 +18,8 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--bg-border)] bg-[var(--bg-base)]/90 px-4 py-3 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between">
+    <header className="sticky top-0 z-40 border-b border-[var(--bg-border)] bg-[var(--bg-base)]/90 px-6 py-3 backdrop-blur sm:px-8 lg:px-12">
+      <div className="flex items-center justify-between">
         <Link href="/" className="text-sm font-semibold tracking-[0.05em] text-[var(--text-primary)]">
           404 CARCARE
         </Link>

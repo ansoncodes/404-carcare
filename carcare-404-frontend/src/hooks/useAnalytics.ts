@@ -26,7 +26,7 @@ export function useAnalytics() {
     }
   }, [query.data]);
 
-  const socket = useWebSocket({
+  useWebSocket({
     path: "/ws/analytics/dashboard/",
     onMessage: (payload) => {
       const event = payload as AnalyticsWsEvent;
@@ -54,5 +54,5 @@ export function useAnalytics() {
     enabled: true,
   });
 
-  return { ...query, data: liveData, connected: socket.connected };
+  return { ...query, data: liveData };
 }

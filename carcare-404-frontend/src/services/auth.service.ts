@@ -61,3 +61,27 @@ export async function updateUser(
   const { data } = await api.patch<User>(`/users/${id}/`, payload);
   return data;
 }
+
+export async function createSupervisor(payload: {
+  email: string;
+  full_name: string;
+  phone?: string;
+  password: string;
+  airport: string;
+}): Promise<User> {
+  const registered = await register({
+    email: payload.email,
+    full_name: payload.full_name,
+    phone: payload.phone,
+    password: payload.password,
+    password2: payload.password,
+  });
+
+  const promoted = await updateUser(registered.user.id, {
+    role: "supervisor",
+    airport: payload.airport,
+    is_active: true,
+  });
+
+  return promoted;
+}
