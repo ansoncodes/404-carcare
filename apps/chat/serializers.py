@@ -1,6 +1,7 @@
 ﻿from rest_framework import serializers
 
 from apps.accounts.serializers import UserMiniSerializer
+from apps.airports.serializers import AirportMiniSerializer
 from apps.bookings.serializers import BookingListSerializer
 from apps.chat.models import ChatRoom, Message
 
@@ -24,28 +25,28 @@ class MessageSerializer(serializers.ModelSerializer):
 class ChatRoomSerializer(serializers.ModelSerializer):
     customer = UserMiniSerializer(read_only=True)
     assigned_staff = UserMiniSerializer(read_only=True)
+    airport = AirportMiniSerializer(read_only=True)
     messages = MessageSerializer(many=True, read_only=True)
     booking = BookingListSerializer(read_only=True)
 
     class Meta:
         model = ChatRoom
         fields = [
-            'id', 'booking', 'customer', 'assigned_staff',
+            'id', 'booking', 'customer', 'assigned_staff', 'airport',
             'status', 'last_message_at', 'messages',
         ]
         read_only_fields = ['id', 'customer', 'last_message_at']
 
 
 class ChatRoomListSerializer(serializers.ModelSerializer):
-    
-
+    booking = BookingListSerializer(read_only=True)
     customer = UserMiniSerializer(read_only=True)
     assigned_staff = UserMiniSerializer(read_only=True)
+    airport = AirportMiniSerializer(read_only=True)
 
     class Meta:
         model = ChatRoom
         fields = [
-            'id', 'booking', 'customer', 'assigned_staff',
+            'id', 'booking', 'customer', 'assigned_staff', 'airport',
             'status', 'last_message_at',
         ]
-

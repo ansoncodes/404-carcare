@@ -33,6 +33,21 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'role', 'is_verified', 'created_at', 'updated_at']
 
 
+class AdminUserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['full_name', 'phone', 'role', 'is_active', 'airport']
+
+    def validate(self, attrs):
+        role = attrs.get('role', getattr(self.instance, 'role', None))
+        airport = attrs.get('airport', getattr(self.instance, 'airport', None))
+        if role == CustomUser.Role.SUPERVISOR and airport is None:
+            raise serializers.ValidationError({'airport': 'Supervisor must be assigned to an airport.'})
+        if role in [CustomUser.Role.CUSTOMER, CustomUser.Role.ADMIN]:
+            attrs['airport'] = None
+        return attrs
+
+
 class UserMiniSerializer(serializers.ModelSerializer):
 
     class Meta:

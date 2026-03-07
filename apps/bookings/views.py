@@ -1,4 +1,5 @@
 ﻿from django.db import transaction
+from django.db.models import Sum
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -7,10 +8,14 @@ from rest_framework.viewsets import ModelViewSet
 
 from apps.bookings.models import Booking, BookingItem
 from apps.bookings.serializers import BookingItemSerializer, BookingListSerializer, BookingSerializer
+from apps.core.permissions import AirportScopedMixin
+from apps.operations.timeline import sync_booking_timeline
 
 
-class BookingViewSet(ModelViewSet):
+class BookingViewSet(AirportScopedMixin, ModelViewSet):
     permission_classes = [IsAuthenticated]
+    airport_field = "airport"
+    customer_field = "customer"
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -18,13 +23,10 @@ class BookingViewSet(ModelViewSet):
         return BookingSerializer
 
     def get_queryset(self):
-        user = self.request.user
-        queryset = Booking.objects.select_related("customer", "vehicle", "airport", "time_slot").prefetch_related("items").order_by("-created_at")
-        if user.is_admin:
-            return queryset
-        if user.is_supervisor:
-            return queryset.filter(airport=user.airport)
-        return queryset.filter(customer=user)
+        queryset = Booking.objects.select_related(
+            "customer", "vehicle", "airport", "supervisor"
+        ).prefetch_related("items").order_by("-created_at")
+        return self.scope_queryset(queryset)
 
     def perform_create(self, serializer):
         serializer.save()
@@ -44,16 +46,10 @@ class BookingViewSet(ModelViewSet):
             booking.status = Booking.Status.CANCELLED
             booking.save(update_fields=["status", "updated_at"])
 
-            slot = booking.time_slot
-            if slot.booked_count > 0:
-                slot.booked_count -= 1
-                slot.save()
-
         return Response({"detail": "Booking cancelled successfully."})
 
     @action(detail=True, methods=["post"], url_path="add-items")
     def add_items(self, request, pk=None):
-        
         booking = self.get_object()
         if booking.status != Booking.Status.PENDING:
             return Response(
@@ -75,6 +71,11 @@ class BookingViewSet(ModelViewSet):
                         unit_price=service.base_price,
                         total_price=service.base_price * item_data["quantity"],
                     )
+                total = BookingItem.objects.filter(booking=booking).aggregate(total=Sum("total_price"))["total"] or 0
+                if booking.parking_booking and booking.parking_booking.total_cost:
+                    total += booking.parking_booking.total_cost
+                booking.total_estimated_cost = total
+                booking.save(update_fields=["total_estimated_cost", "updated_at"])
+                sync_booking_timeline(booking)
             return Response({"detail": "Items added successfully."})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-

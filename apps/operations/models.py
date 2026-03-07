@@ -30,6 +30,7 @@ class JobCard(BaseModel):
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     started_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
+    total_estimated_duration_minutes = models.PositiveIntegerField(default=0)
     notes = models.TextField(null=True, blank=True)
     quality_score = models.PositiveIntegerField(null=True, blank=True, help_text="1 to 5")
 
@@ -37,39 +38,25 @@ class JobCard(BaseModel):
         db_table = "job_cards"
         ordering = ["-created_at"]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._initial_status = self.status
+
     def __str__(self):
-        return f"{self.job_number} — {self.booking.booking_reference} ({self.status})"
+        return f"Job {self.id} for Booking {self.booking.booking_reference} ({self.status})"
 
 
 class WorkStage(BaseModel):
-    class StageName(models.TextChoices):
-        RECEIVED = "received", "Received"
-        PRE_INSPECTION = "pre_inspection", "Pre Inspection"
-        WASHING = "washing", "Washing"
-        DRYING = "drying", "Drying"
-        DETAILING = "detailing", "Detailing"
-        QUALITY_CHECK = "quality_check", "Quality Check"
-        READY = "ready", "Ready for Pickup"
-
     class Status(models.TextChoices):
         PENDING = "pending", "Pending"
         IN_PROGRESS = "in_progress", "In Progress"
         COMPLETED = "completed", "Completed"
         SKIPPED = "skipped", "Skipped"
 
-    STAGE_PROGRESS = {
-        "received": 10,
-        "pre_inspection": 20,
-        "washing": 40,
-        "drying": 55,
-        "detailing": 70,
-        "quality_check": 90,
-        "ready": 100,
-    }
-
     job_card = models.ForeignKey(JobCard, on_delete=models.CASCADE, related_name="stages")
-    stage_name = models.CharField(max_length=20, choices=StageName.choices)
+    stage_name = models.CharField(max_length=100)
     stage_order = models.PositiveIntegerField()
+    estimated_duration_minutes = models.PositiveIntegerField(default=0)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     started_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
@@ -79,6 +66,10 @@ class WorkStage(BaseModel):
         db_table = "work_stages"
         ordering = ["job_card", "stage_order"]
         unique_together = ("job_card", "stage_name")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._initial_status = self.status
 
     def __str__(self):
         return f"{self.job_card.job_number} — {self.stage_name} ({self.status})"
@@ -90,8 +81,17 @@ class WorkStage(BaseModel):
             self.started_at = timezone.now()
         if self.status == self.Status.COMPLETED and not self.completed_at:
             self.completed_at = timezone.now()
-            self.job_card.booking.update_progress(
-                stage=self.stage_name,
-                percentage=self.STAGE_PROGRESS.get(self.stage_name, 0),
-            )
         super().save(*args, **kwargs)
+
+        if self.status == self.Status.IN_PROGRESS:
+            self.job_card.booking.current_stage = self.stage_name
+            self.job_card.booking.save(update_fields=["current_stage", "updated_at"])
+
+        if self.status in [self.Status.COMPLETED, self.Status.SKIPPED]:
+            total_stages = self.job_card.stages.count()
+            if total_stages > 0:
+                completed_stages = self.job_card.stages.filter(
+                    status__in=[self.Status.COMPLETED, self.Status.SKIPPED]
+                ).count()
+                percentage = int((completed_stages / total_stages) * 100)
+                self.job_card.booking.update_progress(stage=self.stage_name, percentage=percentage)

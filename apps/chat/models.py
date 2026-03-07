@@ -19,6 +19,13 @@ class ChatRoom(BaseModel):
         related_name="chat_rooms_as_staff",
         limit_choices_to={"role": "supervisor"},
     )
+    airport = models.ForeignKey(
+        "airports.Airport",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="chat_rooms",
+    )
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.ACTIVE)
     last_message_at = models.DateTimeField(null=True, blank=True)
 

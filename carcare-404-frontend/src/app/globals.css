@@ -1,0 +1,125 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-base: #0a0a0f;
+  --bg-surface: #111118;
+  --bg-elevated: #1a1a24;
+  --bg-border: #2a2a3a;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --accent-glow: rgba(59, 130, 246, 0.15);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #475569;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+.theme-customer {
+  --bg-base: #070b14;
+  --bg-surface: #0e1525;
+  --bg-elevated: #172137;
+  --bg-border: #27324a;
+  --accent: #22d3ee;
+  --accent-hover: #06b6d4;
+  --accent-glow: rgba(34, 211, 238, 0.2);
+  --text-primary: #f4f7ff;
+  --text-secondary: #9eb1ce;
+  --text-muted: #5d6c86;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+* {
+  border-color: var(--bg-border);
+}
+
+html,
+body {
+  min-height: 100%;
+  background: var(--bg-base);
+  color: var(--text-secondary);
+}
+
+body {
+  font-family: var(--font-inter), sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-dm-sans), sans-serif;
+  color: var(--text-primary);
+}
+
+.mono {
+  font-family: var(--font-jetbrains-mono), monospace;
+}
+
+::selection {
+  background: var(--accent);
+  color: white;
+}
+
+@layer utilities {
+  .panel {
+    @apply rounded-xl border bg-[var(--bg-surface)] border-[var(--bg-border)] shadow-sm;
+  }
+
+  .theme-customer .panel {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0) 100%),
+      var(--bg-surface);
+    box-shadow:
+      0 10px 30px -18px rgba(0, 0, 0, 0.8),
+      inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  }
+
+  .theme-customer .panel-hover {
+    @apply transition duration-200;
+  }
+
+  .theme-customer .panel-hover:hover {
+    border-color: color-mix(in srgb, var(--accent) 35%, var(--bg-border));
+    transform: translateY(-2px);
+    box-shadow:
+      0 16px 34px -20px rgba(0, 0, 0, 0.85),
+      0 0 0 1px rgba(34, 211, 238, 0.18);
+  }
+
+  .theme-customer-bg {
+    background:
+      radial-gradient(circle at 8% -10%, rgba(34, 211, 238, 0.12), transparent 34%),
+      radial-gradient(circle at 92% -5%, rgba(59, 130, 246, 0.13), transparent 30%),
+      linear-gradient(180deg, #070b14 0%, #070b14 45%, #060914 100%);
+  }
+
+  .theme-customer-divider {
+    border-color: color-mix(in srgb, var(--accent) 22%, var(--bg-border));
+  }
+
+  .app-fade-in {
+    animation: fadeIn 150ms ease;
+  }
+
+  .label-track {
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
